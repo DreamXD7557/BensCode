@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f9;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .game-container {
+            max-width: 500px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        #score {
+            font-size: 20px;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        .message {
+            margin-top: 20px;
+            text-align: center;
+        }
+        #level-form {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        #level-form input {
+            padding: 10px;
+            margin-right: 10px;
+            font-size: 16px;
+        }
+        button {
+            padding: 10px 15px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .question-container {
+            margin-bottom: 20px;
+        }
+        .input-container {
+            margin-bottom: 10px;
+        }
+        .input-container input {
+            padding: 8px;
+            font-size: 16px;
+            width: 50px;
+        }
+        .input-container button {
+            padding: 8px 12px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .input-container button:hover {
+            background-color: #45a049;
+        }
+        #feedback {
+            margin-top: 10px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .correct {
+            color: green;
+        }
+        .incorrect {
+            color: red;
+        }
+        .history-container {
+            margin-top: 20px;
+            font-size: 16px;
+        }
+        .history-item {
+            margin-bottom: 10px;
+        }
+        /* New style for joke to make it more prominent */
+        #joke {
+            margin-top: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #FF5733; /* A bright color to make it stand out */
+            text-align: center;
+        }
+        /* New style for answered questions to make them less prominent (grey) */
+        .history-item {
+            color: grey; /* Grey text for answered questions */
+            font-size: 14px;
+        }
+        hr {
+            margin-top: 20px;
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+
+<div class="game-container">
+    <h1>Math Game</h1>
+    <div id="level-form">
+        <input type="text" id="level-input" placeholder="Choose level: easy, medium, hard, crazy, impossible">
+        <button onclick="startGame()">Start Game</button>
+    </div>
+    <div id="question-container"></div>
+    <div id="score"></div>
+    <div id="feedback"></div>
+    
+    <!-- Joke section will be placed here -->
+    <div id="joke"></div>
+    
+    <!-- Horizontal line to separate joke from the history -->
+    <hr>
+    
+    <!-- History section for previous questions and answers -->
+    <div id="history" class="history-container"></div>
+    <div id="final-message"></div>
+</div>
+
+<script>
+    const numQuestions = 5;
+    const scoreNeeded = 3;
+    let score = 0;
+    let level = '';
+    let currentQuestion = 0;
+
+    function getJoke() {
+        // Fetch a random joke from the joke API
+        fetch('https://official-joke-api.appspot.com/random_joke')
+            .then(response => response.json())
+            .then(joke => {
+                document.getElementById('joke').innerHTML = `<p>${joke.setup} - <em>${joke.punchline}</em></p>`;
+            })
+            .catch(() => {
+                document.getElementById('joke').innerHTML = "<p>Sorry, could not fetch a joke at the moment.</p>";
+            });
+    }
+
+    function startGame() {
+        level = document.getElementById('level-input').value.toLowerCase();
+        const validLevels = ['easy', 'medium', 'hard', 'crazy', 'impossible'];
+
+        if (!validLevels.includes(level)) {
+            alert('Invalid level! Please choose one of the following: easy, medium, hard, crazy, impossible.');
+            return;
+        }
+
+        document.getElementById('level-form').style.display = 'none';
+        score = 0;
+        currentQuestion = 0;
+        document.getElementById('score').innerText = `Score: ${score}`;
+        document.getElementById('history').innerHTML = ''; // Clear previous history
+        askQuestion();
+    }
+
+    function askQuestion() {
+        if (currentQuestion >= numQuestions) {
+            displayFinalMessage();
+            return;
+        }
+
+        const tables = getTables(level);
+        const num1 = tables[Math.floor(Math.random() * tables.length)];
+        const num2 = Math.floor(Math.random() * 10) + 1;
+
+        const correctAnswer = num1 * num2;
+        const questionText = `What is ${num1} * ${num2}?`;
+        
+        const questionContainer = document.getElementById('question-container');
+        questionContainer.innerHTML = `
+            <div class="question-container">
+                <p><strong>Question ${currentQuestion + 1}:</strong> ${questionText}</p>
+                <div class="input-container">
+                    <input type="number" id="answer-input" placeholder="Your answer">
+                    <button id="submit-btn" onclick="checkAnswer(${correctAnswer}, '${questionText}', ${num1}, ${num2})">Submit</button>
+                </div>
+            </div>
+        `;
+    }
+
+    function checkAnswer(correctAnswer, questionText, num1, num2) {
+        const userAnswer = parseInt(document.getElementById('answer-input').value);
+        const feedbackElement = document.getElementById('feedback');
+
+        if (userAnswer === correctAnswer) {
+            score++;
+            feedbackElement.innerHTML = `<span class="correct">Correct!</span>`;
+        } else {
+            feedbackElement.innerHTML = `<span class="incorrect">Incorrect!</span>`;
+        }
+
+        // Display the question, user's answer, and correct answer in the history
+        const historyElement = document.getElementById('history');
+        historyElement.innerHTML += `
+            <div class="history-item">
+                <p><strong>Q${currentQuestion + 1}:</strong> ${questionText} Your answer: ${userAnswer} (Correct answer: ${correctAnswer})</p>
+            </div>
+        `;
+
+        currentQuestion++;
+        document.getElementById('score').innerText = `Score: ${score}`;
+
+        // Disable the submit button if it's the last question
+        if (currentQuestion >= numQuestions) {
+            document.getElementById('submit-btn').disabled = true;
+        }
+
+        // Delay the next question slightly to show feedback
+        setTimeout(askQuestion, 1000);
+    }
+
+    function getTables(level) {
+        if (level === "easy") {
+            return [2, 5, 10];
+        } else if (level === "medium") {
+            return [3, 4, 6, 7, 8, 9, 11, 12];
+        } else if (level === "hard") {
+            return [Math.floor(Math.random() * 100) + 1];
+        } else if (level === "crazy") {
+            return [Math.floor(Math.random() * 20) + 1, Math.floor(Math.random() * 20) + 1];
+        } else if (level === "impossible") {
+            return [Math.floor(Math.random() * 100) + 1, Math.floor(Math.random() * 1000) + 1];
+        }
+    }
+
+    function displayFinalMessage() {
+        if (score >= scoreNeeded) {
+            document.getElementById('final-message').innerHTML = `<p>Congratulations! You scored ${score} out of ${numQuestions}. Here's a joke for you:</p>`;
+            getJoke();
+        } else {
+            document.getElementById('final-message').innerHTML = `<p>Better luck next time! You scored ${score} out of ${numQuestions}.</p>`;
+        }
+    }
+</script>
+
+</body>
+</html>
