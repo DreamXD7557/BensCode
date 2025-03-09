@@ -116,7 +116,7 @@
 <body>
 
 <div class="game-container">
-    <h1>Bens Math Game</h1>
+    <h1>Math Game</h1>
     <div id="level-form">
         <input type="text" id="level-input" placeholder="Choose level: easy, medium, hard, crazy, impossible">
         <button onclick="startGame()">Start Game</button>
@@ -126,7 +126,6 @@
     <div id="feedback"></div>
     
     <!-- Joke section will be placed here -->
-    <div id="final-message"></div>
     <div id="joke"></div>
     
     <!-- Horizontal line to separate joke from the history -->
@@ -134,7 +133,7 @@
     
     <!-- History section for previous questions and answers -->
     <div id="history" class="history-container"></div>
-
+    <div id="final-message"></div>
 </div>
 
 <script>
@@ -192,7 +191,7 @@
                 <p><strong>Question ${currentQuestion + 1}:</strong> ${questionText}</p>
                 <div class="input-container">
                     <input type="number" id="answer-input" placeholder="Your answer">
-                    <button id="submit-btn" onclick="checkAnswer(${correctAnswer}, '${questionText}', ${num1}, ${num2})">Enter your answer</button>
+                    <button id="submit-btn" onclick="checkAnswer(${correctAnswer}, '${questionText}', ${num1}, ${num2})">Submit</button>
                 </div>
             </div>
         `;
@@ -204,7 +203,7 @@
 
         if (userAnswer === correctAnswer) {
             score++;
-            feedbackElement.innerHTML = `<span class="correct">Correct dude!</span>`;
+            feedbackElement.innerHTML = `<span class="correct">Correct!</span>`;
         } else {
             feedbackElement.innerHTML = `<span class="incorrect">Incorrect!</span>`;
         }
